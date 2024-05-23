@@ -1,0 +1,223 @@
+﻿#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <ctime>
+#include <cctype>
+#include <limits>
+using namespace std;
+
+
+class CaesarCipher {
+private:
+    int shiftValue;
+
+
+protected:
+    string encode(const string& message) {
+        string Encrypted = message;
+
+
+        for (char& character : Encrypted) {
+            if (isalpha(character)) {
+                char base;
+                if (islower(character)) {
+                    base = 'a';
+                } else {
+                    base = 'A';
+                }
+                character = (character - base + shiftValue) % 26 + base;
+            }
+        }
+
+
+        return Encrypted;
+    }
+
+
+public:
+    void setShiftValue(int value) {
+        shiftValue = value;
+    }
+
+
+    int getShiftValue() {
+        return shiftValue;
+    }
+
+
+    string encrypt(const string& message) {
+        return encode(message);
+    }
+
+
+    string decode(const string& message) {
+        return encode(message);
+    }
+};
+
+
+class Rot13Cipher : public CaesarCipher {
+public:
+    Rot13Cipher() {
+        setShiftValue(13);
+    }
+};
+
+
+CaesarCipher* createCaesarCipher(int guessValue) {
+    if (guessValue == 13)
+        return new Rot13Cipher();
+    else {
+        CaesarCipher* cipherPtr = new CaesarCipher();
+        cipherPtr->setShiftValue(guessValue);
+        return cipherPtr;
+    }
+}
+
+
+string encodeNewMessage(int shiftValue) {
+    CaesarCipher* cipherPtr = createCaesarCipher(shiftValue);
+    string message;
+    cout << "Enter the message to be encoded: ";
+    cin.ignore();
+    getline(cin, message);
+    
+    while (message.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ") != string::npos) {
+            cout << "Please enter letters only: ";
+            getline(cin, message);
+        }
+    
+    
+
+
+    if (cin.fail()) {
+        cout << "Invalid input. Please enter a message." << endl;
+        return "";
+    }
+
+
+    string EncodedMessage = cipherPtr->encrypt(message); 
+    cout << "Encoded message using Caesar Cipher: " << EncodedMessage << endl;
+    delete cipherPtr;
+    return EncodedMessage;
+}
+
+
+void decodeNewMessage(const string& message) {
+    int DecodeValue;
+    cout << "Enter your guess for the shift value (1-13) to decode the message: ";
+    cin >> DecodeValue;
+
+
+    while (cin.fail() || DecodeValue < 1 || DecodeValue > 13) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Invalid shift Value. Enter you guess for the shift value (1-13) to decode the message: ";
+        cin >> DecodeValue;
+    }
+    DecodeValue = (26 - DecodeValue) % 26;
+
+
+    CaesarCipher* cipherPtr = createCaesarCipher(DecodeValue);
+    string DecodedMessage = cipherPtr->decode(message);
+    cout << "Decoding message using Caesar Cipher (shift value " << 26 - DecodeValue << "):\n";
+    cout << "Decoded message: " << DecodedMessage << endl;
+    delete cipherPtr;
+}
+
+
+void ResponseEncode() {
+    string response;
+    cout << "~~~~~~~~~~~Welcome to the Cipher Program! ~~~~~~~~~~\n";
+
+
+    cout << "Do you want to encode a new message? (y/n or yes/no): ";
+    cin >> response;
+    while (response != "n" && response != "no" && response != "yes" && response != "y") {
+        cout << "Please enter y/n or yes/no: ";
+        cin >> response;
+    }
+    if ((response != "yes") && (response != "y")) {
+        cout << "Exiting the program." << endl;
+        exit(0);
+    }
+}
+
+
+void ResponseDecode() {
+    string responseDecode;
+    cout << "Do you want to decode the recent captured message? (y/n or yes/no): ";
+    cin >> responseDecode;
+    while (responseDecode != "n" && responseDecode != "no" && responseDecode != "yes" && responseDecode != "y") {
+        cout << "Please enter y/n or yes/no: ";
+        cin >> responseDecode;
+    }
+    if ((responseDecode != "yes") && (responseDecode != "y")) {
+        cout << "Exiting the program." << endl;
+        exit(0);
+    }
+}
+
+
+int getRandomShiftValue() {
+    srand(time(0));
+    return rand() % 13 + 1;
+}
+
+
+int main() {
+
+
+    ResponseEncode();
+
+
+    int shiftValue = getRandomShiftValue();
+    string encodedMessage = encodeNewMessage(shiftValue);
+
+
+    ResponseDecode();
+
+
+    decodeNewMessage(encodedMessage);
+
+
+    cout << "Is the decoded message correct (y/n or yes/no): ";
+    string correctDecodeResponse;
+    cin >> correctDecodeResponse;
+    while (correctDecodeResponse != "n" && correctDecodeResponse != "no" && correctDecodeResponse != "yes" && correctDecodeResponse != "y") {
+        cout << "Please enter y/n or yes/no: ";
+        cin >> correctDecodeResponse;
+    }
+
+
+    while (correctDecodeResponse == "no" || correctDecodeResponse == "n") {
+    cout << "Do you want to try again with a different shift value? (y/n or yes/no): ";
+    string differentValueResponse;
+    cin >> differentValueResponse;
+    while (differentValueResponse != "n" && differentValueResponse != "no" && differentValueResponse != "yes" && differentValueResponse != "y") {
+        cout << "Please enter y/n or yes/no: ";
+        cin >> differentValueResponse;
+    }
+    if (differentValueResponse == "y" || differentValueResponse == "yes") {
+        decodeNewMessage(encodedMessage);
+    } else {
+        exit(0);
+    }
+    cout << "Is the decoded message correct (y/n or yes/no): ";
+    cin >> correctDecodeResponse;
+    while (correctDecodeResponse != "n" && correctDecodeResponse != "no" && correctDecodeResponse != "yes" && correctDecodeResponse != "y") {
+        cout << "Please enter y/n or yes/no: ";
+        cin >> correctDecodeResponse;
+    }
+
+
+    
+}
+
+
+if (correctDecodeResponse == "yes" || correctDecodeResponse == "y") {
+        cout << "Congratulations! You decoded the message correctly!";
+    }
+    
+    return 0;
+}
